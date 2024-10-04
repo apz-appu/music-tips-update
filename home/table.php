@@ -1,0 +1,250 @@
+<?php
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+
+    //connection check
+
+    $conn = mysqli_connect($servername, $username, $password);
+    if (!$conn) 
+    {
+        die("Connection failed: " . mysqli_connect_error());
+    }
+
+    //db creation
+
+    $sql="CREATE DATABASE IF NOT EXISTS mydb";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating database: " . mysqli_error($conn);
+    }
+
+    //table-1 sign_up
+
+    mysqli_select_db($conn, "mydb");
+    $sql="CREATE TABLE IF NOT EXISTS sign_up (
+        signup_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        user_name VARCHAR(50) NOT NULL UNIQUE,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        phone VARCHAR(15) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        user_type VARCHAR(10) NOT NULL DEFAULT 'user',
+        signup_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+        is_admin BOOLEAN DEFAULT FALSE,
+        reset_token VARCHAR(65),
+        reset_token_expires DATETIME
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating Sign table: " . mysqli_error($conn);
+    }
+
+    //table-2 log_in
+
+    $sql="CREATE TABLE IF NOT EXISTS log_in (
+        login_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        login_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP()
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating Sign table: " . mysqli_error($conn);
+    }
+
+    //table-3 admin
+
+    $sql="CREATE TABLE IF NOT EXISTS admin(
+        admin_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        admin_name VARCHAR(50)NOT NULL UNIQUE,
+        email VARCHAR(100)NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP()
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating admin table: " . mysqli_error($conn);
+    }
+
+    //table-4 user
+
+    $sql="CREATE TABLE IF NOT EXISTS user(
+        user_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        username VARCHAR(50)NOT NULL UNIQUE,
+        email VARCHAR(100)NOT NULL UNIQUE,
+        phone VARCHAR(15) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+        reset_token VARCHAR(65),
+        reset_token_expires DATETIME
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating user table: " . mysqli_error($conn);
+    }
+
+    //table-5 category
+
+    $sql="CREATE TABLE IF NOT EXISTS category(
+        category_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        category_name VARCHAR(100)NOT NULL
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating category table: " . mysqli_error($conn);
+    }
+
+    //insert if not exists
+
+    $categories = ['Vocal', 'Guitar', 'Drum', 'Keyboard'];
+
+    foreach ($categories as $category) 
+    {
+        $insert_sql = "INSERT INTO category (category_name) 
+                       SELECT * FROM (SELECT '$category') AS tmp
+                       WHERE NOT EXISTS (
+                           SELECT category_name FROM category WHERE category_name = '$category'
+                       ) LIMIT 1";
+    
+        if (mysqli_query($conn, $insert_sql)) 
+        {
+            echo "";
+        } else 
+        {
+            echo "<br>Error inserting category: " . mysqli_error($conn);
+        }
+    }
+
+    //table-6 tips
+
+    $sql="CREATE TABLE IF NOT EXISTS tips(
+        tip_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        user_id INT(11) UNSIGNED NOT NULL,
+        category_id INT(11)UNSIGNED NOT NULL,
+        tip_content TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+        FOREIGN KEY (category_id)REFERENCES category(category_id),
+        FOREIGN KEY (user_id) REFERENCES user(user_id)
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating tips table: " . mysqli_error($conn);
+    }
+
+    //table-7 feedback
+
+    $sql="CREATE TABLE IF NOT EXISTS feedback(
+        feedback_id INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        user_id INT(11)UNSIGNED NOT NULL,
+        category_id INT(11)UNSIGNED NOT NULL,
+        feedback_text TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+        FOREIGN KEY (user_id)REFERENCES user(user_id),
+        FOREIGN KEY (category_id)REFERENCES category(category_id)
+        )";
+    if(mysqli_query($conn,$sql))
+    {
+        echo "";
+    }
+    else
+    {
+        echo "<br>Error creating feedback table: " . mysqli_error($conn);
+    }
+    
+    //create trigger to add an admin to sign up page
+    $sql = "
+    CREATE TRIGGER IF NOT EXISTS after_admin_insert
+    AFTER INSERT ON admin
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO sign_up (user_name, email, password, user_type, signup_time,is_admin)
+        VALUES (NEW.admin_name, NEW.email, NEW.password, 'admin', NOW(),1);
+    END;
+    ";
+
+    if (mysqli_query($conn, $sql)) {
+        echo "";
+    } else {
+        echo "<br>Error creating trigger: " . mysqli_error($conn);
+    }
+
+
+    // Create trigger for DELETE from sign when delete an admin
+    $sql = "
+        CREATE TRIGGER IF NOT EXISTS after_admin_delete
+        AFTER DELETE ON admin
+        FOR EACH ROW
+        BEGIN
+            DELETE FROM sign_up
+            WHERE email = OLD.email;
+        END;
+        ";
+        if (mysqli_query($conn, $sql)) {
+            echo "";
+        } else {
+            echo "Error creating delete trigger: " . mysqli_error($conn) . "<br>";
+        }
+
+        //create trigger for add user to user table
+    $sql = "
+        CREATE TRIGGER IF NOT EXISTS after_sign_up_insert
+        AFTER INSERT ON sign_up
+        FOR EACH ROW
+        BEGIN
+            IF NEW.user_type = 'user' THEN
+                INSERT INTO user (username, email,phone, password, added_at)
+                VALUES (NEW.user_name, NEW.email,NEW.phone, NEW.password, NOW());
+            END IF;
+        END;
+        ";
+
+        if (mysqli_query($conn, $sql)) {
+            echo "";
+        } else {
+            echo "Error creating trigger: " . mysqli_error($conn) . "<br>";
+        }
+
+        //create trigger for REMOVE user FROM user table
+        $sql = "
+            CREATE TRIGGER IF NOT EXISTS after_user_delete
+            AFTER DELETE ON user
+            FOR EACH ROW
+            BEGIN
+                    DELETE FROM sign_up
+                    WHERE email = OLD.email;
+            END;
+            ";
+
+            if (mysqli_query($conn, $sql)) {
+                echo "";
+            } else {
+                echo "Error creating trigger: " . mysqli_error($conn) . "<br>";
+            }
+?>
