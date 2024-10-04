@@ -43,7 +43,7 @@ $conn->close();
         <div class="sidebar-menu">
             <ul>
                 <li><a href="user_dashboard.php"><ion-icon name="home"></ion-icon>Home</a></li>
-                <li><a href="vocal.php" class="active"><i class="fa-solid fa-microphone-lines"></i>Vocal Tips</a></li>
+                <li><a href="vocal.php"><i class="fa-solid fa-microphone-lines"></i>Vocal Tips</a></li>
                 <li><a href="guitar.php"><i class="fa-solid fa-guitar"></i>Guitar Tips</a></li>
                 <li><a href="drum.php"  class="active"><i class="fa-solid fa-drum"></i> Drums Tips</a></li>
                 <li><a href="keyboard.php"><i class="fa-brands fa-soundcloud"></i> Keyboard Tips</a></li>
