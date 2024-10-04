@@ -47,7 +47,6 @@ $conn->close();
                 <li><a href="guitar.php" class="active"><i class="fa-solid fa-guitar"></i>Guitar Tips</a></li>
                 <li><a href="drum.php"><i class="fa-solid fa-drum"></i> Drums Tips</a></li>
                 <li><a href="keyboard.php"><i class="fa-brands fa-soundcloud"></i> Keyboard Tips</a></li>
-                <li><a href="#"><i class="fa-solid fa-music"></i>Music Theory</a></li>
                 <li class="usr"><a href="usere.php"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>User</span></a></li>
             </ul>
         </div>
