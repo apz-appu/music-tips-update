@@ -47,7 +47,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>User </title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -71,7 +71,6 @@ $conn->close();
                 <li><a href="guitar.php"><i class="fa-solid fa-guitar"></i>Guitar Tips</a></li>
                 <li><a href="drum.php"><i class="fa-solid fa-drum"></i> Drums Tips</a></li>
                 <li><a href="keyboard.php"><i class="fa-brands fa-soundcloud"></i> Keyboard Tips</a></li>
-                <li><a href="#"><i class="fa-solid fa-music"></i>Music Theory</a></li>
                 <li class="usr"><a href="usere.php" class="active"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>User</span></a></li>
             </ul>
         </div>
