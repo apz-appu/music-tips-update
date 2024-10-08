@@ -18,7 +18,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc(); // Fetch the user details
 
-$category = 2; 
+$category = 4; 
 // Prepare the query to fetch tips for the selected category
 $query = "SELECT tips.tip_id, tips.tip_content, tips.created_at, user.username 
           FROM tips
@@ -54,7 +54,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guitar Tips</title>
+    <title>Keyboard Tips</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -235,9 +235,9 @@ $stmt->close();
             border-radius: 5px;
             cursor: pointer;
         }
-        
+
         .sear{
-            padding-left: 71%;
+            padding-left: 68%;
         }
     </style>
 </head>
@@ -255,9 +255,9 @@ $stmt->close();
             <ul>
                 <li><a href="user_dashboard.php"><ion-icon name="home"></ion-icon>Home</a></li>
                 <li><a href="vocal.php"><i class="fa-solid fa-microphone-lines"></i>Vocal Tips</a></li>
-                <li><a href="guitar.php" class="active"><i class="fa-solid fa-guitar"></i>Guitar Tips</a></li>
+                <li><a href="guitar.php"><i class="fa-solid fa-guitar"></i>Guitar Tips</a></li>
                 <li><a href="drum.php"><i class="fa-solid fa-drum"></i> Drums Tips</a></li>
-                <li><a href="keyboard.php"><i class="fa-brands fa-soundcloud"></i> Keyboard Tips</a></li>
+                <li><a href="keyboard.php" class="active"><i class="fa-brands fa-soundcloud"></i> Keyboard Tips</a></li>
                 <li class="usr"><a href="usere.php"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>User</span></a></li>
             </ul>
         </div>
@@ -265,7 +265,7 @@ $stmt->close();
 
     <div class="main-content">
         <header>
-            <h2>Guitar Tips</h2>
+            <h2>Keyboard Tips</h2>
             <div class="sear">
                 <span class="ti-search"></span>
                 <input type="search" placeholder="Search">
