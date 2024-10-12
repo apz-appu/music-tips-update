@@ -1,9 +1,17 @@
 <?php
-session_start();
-session_unset(); 
-session_destroy();
+session_start(); // Start the session
 
-// Redirect to home page or login page
-header('Location: ../home/testhome.php');
+// Unset all session variables
+session_unset();  
+
+unset($user_data);
+unset($stmt);
+unset($tips_stmt);
+
+// Destroy the session on the server
+session_destroy(); 
+
+// Redirect the user to the home page
+header("Location: ../home/testhome.php"); 
 exit();
 ?>
