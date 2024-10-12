@@ -10,12 +10,10 @@ if (!isset($_SESSION['signup_id'])) {
 include('../home/table.php');
 
 // Fetch user data (assuming user_id is stored in session)
-$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1; // Default to 1 if not set for testing
+$user_id = $_SESSION['signup_id']; // Default to 1 if not set for testing
 
 // Prepare the SQL query to fetch user data from the `user` table
 $user_sql = "SELECT username, email, phone, added_at FROM user WHERE user_id = ?";
-$add="SELECT added_at FROM user WHERE user_id = ?";
-$_SESSION['added_at'] = $add;
 
 $stmt = $conn->prepare($user_sql);
 $stmt->bind_param("i", $user_id);
@@ -33,7 +31,27 @@ if ($result->num_rows > 0) {
         'added_at' => 'N/A'
     ];
 }
+
+
+// Fetch user's tips from all categories
+$tips_sql = "SELECT t.*, c.category_name 
+             FROM tips t 
+             JOIN category c ON t.category_id = c.category_id 
+             WHERE t.user_id = ? 
+             ORDER BY t.created_at DESC";
+
+$tips_stmt = $conn->prepare($tips_sql);
+$tips_stmt->bind_param("i", $user_id);
+$tips_stmt->execute();
+$tips_result = $tips_stmt->get_result();
+
+$user_tips = [];
+while ($tip = $tips_result->fetch_assoc()) {
+    $user_tips[] = $tip;
+}
+
 $stmt->close();
+$tips_stmt->close();
 $conn->close();
 ?>
 
@@ -66,8 +84,19 @@ $conn->close();
         }
 
         .logout-btn {
-            background-color: #007bff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            background-color:red;
             color: white;
+        }
+
+        .logout-btn:hover {
+            background-color:red ;
+            opacity: 0.8;
         }
 
         .edit-btn {
@@ -88,6 +117,69 @@ $conn->close();
         .profile-btn:hover {
             background-color:#0060c6 ;
             opacity: 0.9;
+        }
+
+        
+        .user-tips-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tip-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tip-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .tip-category {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .tip-date {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .tip-media {
+            margin-top: 10px;
+        }
+
+        .tip-media img, .tip-media video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .no-tips {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        .t{
+
         }
     </style>
 </head>
@@ -132,22 +224,22 @@ $conn->close();
                 <div class="profile-header">
                     <img src="/api/placeholder/100/100" alt="User Avatar" class="profile-avatar">
                     <div>
-                        <h3 class="profile-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></h3>
+                        <h3 class="profile-name"><?php echo htmlspecialchars($user_data['username']); ?></h3>
                         <p class="profile-role">Regular User</p>
                     </div>
                 </div>
                 <div class="profile-details">
                     <div class="profile-item">
-                        <span>Email:</span> <span id="email-display"><?php echo htmlspecialchars($_SESSION['email']); ?></span>
+                        <span>Email:</span> <span id="email-display"><?php echo htmlspecialchars($user_data['email']); ?></span>
                     </div>
                     <div class="profile-item">
-                        <span>Username:</span> <span id="username-display"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
+                        <span>Username:</span> <span id="username-display"><?php echo htmlspecialchars($user_data['username']); ?></span>
                     </div>
                     <div class="profile-item">
-                        <span>Phone:</span> <span id="phone-display"><?php echo htmlspecialchars($_SESSION['phone']); ?></span>
+                        <span>Phone:</span> <span id="phone-display"><?php echo htmlspecialchars($user_data['phone']); ?></span>
                     </div>
                     <div class="profile-item">
-                        <span>Joined:</span> <?php echo date('F j, Y, g:i a', strtotime($_SESSION['added_at'])); ?>
+                        <span>Joined:</span> <?php echo date('F j, Y, g:i a', strtotime($user_data['added_at'])); ?>
                     </div>
 
                 </div>
@@ -156,9 +248,42 @@ $conn->close();
                     <button id="edit-profile-btn" class="profile-btn edit-btn">Edit Profile</button>
                     <button id="add-tip-btn" class="profile-btn add-tip-btn">Add Tip</button>
                     <button id="feedback-btn" class="profile-btn feedback-btn">Feedback</button>
-                    <button id="logout-btn" class="profile-btn logout-btn">Log Out</button>
+                    <button id="logout-btn" class="logout-btn">Log Out</button>
                 </div>
+                
             </div>
+            <div class="user-tips-section">
+                    <h3 class="t"><br>My Tips</h3>
+                    <?php if (empty($user_tips)): ?>
+                        <div class="no-tips">
+                            <p>You haven't added any tips yet. Click "Add Tip" to share your knowledge!</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="tips-grid">
+                            <?php foreach ($user_tips as $tip): ?>
+                                <div class="tip-card">
+                                    <span class="tip-category"><?php echo htmlspecialchars($tip['category_name']); ?></span>
+                                    <h4><?php echo htmlspecialchars($tip['tip_content']); ?></h4>
+                                    <?php if ($tip['media_type'] && $tip['media_path']): ?>
+                                        <div class="tip-media">
+                                            <?php if ($tip['media_type'] == 'image'): ?>
+                                                <img src="<?php echo htmlspecialchars($tip['media_path']); ?>" alt="Tip Image">
+                                            <?php elseif ($tip['media_type'] == 'video'): ?>
+                                                <video controls>
+                                                    <source src="<?php echo htmlspecialchars($tip['media_path']); ?>" type="video/mp4">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="tip-date">
+                                        Added on: <?php echo date('F j, Y', strtotime($tip['created_at'])); ?><br><br>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
         </main>
     </div>
 

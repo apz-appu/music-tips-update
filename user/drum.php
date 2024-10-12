@@ -20,11 +20,11 @@ $user = $result->fetch_assoc(); // Fetch the user details
 
 $category = 3; 
 // Prepare the query to fetch tips for the selected category
-$query = "SELECT tips.tip_id, tips.tip_content, tips.created_at, user.username 
+$query = "SELECT tips.tip_id, tips.tip_content, tips.created_at, tips.media_type, tips.media_path, user.username 
           FROM tips
           JOIN user ON tips.user_id = user.user_id
           WHERE tips.category_id = ?
-          ORDER BY tips.created_at DESC"; // Added ordering by date
+          ORDER BY tips.created_at DESC";
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $category);
@@ -291,6 +291,15 @@ $stmt->close();
                     </div>
                     <div class="tip-body">
                         <p><?php echo nl2br(htmlspecialchars($row['tip_content'])); ?></p>
+
+                        <?php if ($row['media_type'] == 'image' && !empty($row['media_path'])) { ?>
+                            <img src="<?php echo htmlspecialchars($row['media_path']); ?>" alt="Tip Image" class="tip-media" style="max-width:100%; height:auto;">
+                        <?php } elseif ($row['media_type'] == 'video' && !empty($row['media_path'])) { ?>
+                            <video controls class="tip-media" style="max-width:100%;">
+                                <source src="<?php echo htmlspecialchars($row['media_path']); ?>" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        <?php } ?>
                     </div>
                     <div class="tip-footer">
                         <button class="view-reviews-btn" data-tip-id="<?php echo $row['tip_id']; ?>">View Reviews</button>

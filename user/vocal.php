@@ -310,18 +310,6 @@ $stmt->close();
         </div>
     </div>
 
-    <!-- Modal for adding reviews -->
-    <div class="modal" id="review-modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h3>Add Your Review</h3>
-            <form class="review-form" id="review-form">
-                <input type="hidden" id="tip-id" name="tip_id">
-                <textarea name="review_content" rows="4" placeholder="Write your review here..." required></textarea>
-                <button type="submit" class="submit-review">Submit Review</button>
-            </form>
-        </div>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

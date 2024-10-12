@@ -104,27 +104,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .bg-gray-100 {
-            background-color: #f3f4f6;
+            background-color: black;
         }
 
         .tip-form-container {
             max-width: 48rem;
-            margin: 2rem auto;
-            background: white;
+            margin: .5rem auto;
+            background: black;
             border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            box-shadow:  0 10px 30px rgba(20, 204, 255, 0.976);
             overflow: hidden;
         }
 
         .form-header {
             padding: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid black;
         }
 
         .form-title {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #111827;
+            color: #22dbdf;
             text-align: center;
         }
 
@@ -140,16 +140,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: block;
             font-size: 0.875rem;
             font-weight: 500;
-            color: #374151;
+            color: #22dbdf;
             margin-bottom: 0.5rem;
         }
 
         .form-select {
             width: 100%;
             padding: 0.5rem;
-            border: 1px solid #d1d5db;
+            border: 1px solid #89fdff;
             border-radius: 0.375rem;
-            background-color: #fff;
+            background-color: ##89fdff;
             font-size: 1rem;
             color: #374151;
         }
@@ -160,14 +160,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 0.5rem;
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
-            background-color: #fff;
+            background-color: #89fdff;
             font-size: 1rem;
             color: #374151;
             resize: vertical;
         }
 
         .upload-area {
-            border: 2px dashed #d1d5db;
+            border: 2px dashed #22dbdf;
             border-radius: 0.5rem;
             padding: 1.5rem;
             text-align: center;
@@ -176,8 +176,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .upload-area:hover {
-            border-color: #9ca3af;
-            background-color: #f9fafb;
+            border-color: #22dbdf;
+            background-color: #22dbdf;
         }
 
         .upload-icon {

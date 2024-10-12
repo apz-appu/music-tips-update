@@ -1,3 +1,31 @@
+<?php
+session_start(); // Start the session
+
+// Check if the user is logged in by verifying if the session variable 'user_id' is set
+if (!isset($_SESSION['signup_id'])) {
+    // If the user is not logged in, redirect to the login page
+    header("Location: ../home/testhome.php");
+    exit();
+}
+
+// You can fetch more user details from the database if needed using the session user_id
+// Assuming you have a connection file for the database
+include('../home/table.php');
+
+// Fetch user details from the database using session user_id
+$user_id = $_SESSION['signup_id'];
+$user_name = $_SESSION['user_name'];
+$sql = "SELECT * FROM sign_up WHERE signup_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc(); // Fetch the user details
+
+// Close the database connection
+$stmt->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,8 +50,8 @@
                 <li><a href="user_dashboard.php" class="active"><ion-icon name="home"></ion-icon>Home</a></li>
                 <li><a href="vocal.php"><i class="fa-solid fa-microphone-lines"></i>Vocal Tips</a></li>
                 <li><a href="guitar.php"><i class="fa-solid fa-guitar"></i>Guitar Tips</a></li>
-                <li><a href="drum.php"><i class="fa-solid fa-drum"></i> Drums Tips</a></li>
-                <li><a href="keyboard.php"><i class="fa-brands fa-soundcloud"></i> Keyboard Tips</a></li>
+                <li><a href="drum.php"><i class="fa-solid fa-drum"></i>Drums Tips</a></li>
+                <li><a href="keyboard.php"><i class="fa-brands fa-soundcloud"></i>Keyboard Tips</a></li>
                 <li class="usr"><a href="usere.php"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>User</span></a></li>
             </ul>
         </div>
@@ -33,6 +61,7 @@
     <div class="main-content">
         <header>
             <h2>User Dashboard</h2>
+            <p>Welcome, <?php echo htmlspecialchars($user_name); ?>!</p> <!-- Display user name from session -->
             <input type="search" placeholder="Search">
         </header>
 
