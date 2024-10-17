@@ -33,6 +33,28 @@ if ($result->num_rows > 0) {
 }
 
 
+function deleteTip($tip_id, $user_id) {
+    global $conn;
+    $delete_sql = "DELETE FROM tips WHERE tip_id = ? AND user_id = ?";
+    $delete_stmt = $conn->prepare($delete_sql);
+    $delete_stmt->bind_param("ii", $tip_id, $user_id);
+    $result = $delete_stmt->execute();
+    $delete_stmt->close();
+    return $result;
+}
+
+// Handle tip deletion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_tip'])) {
+    $tip_id = $_POST['tip_id'];
+    if (deleteTip($tip_id, $user_id)) {
+        // Refresh the page to show updated tips list
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    } else {
+        $delete_error = "Failed to delete tip. Please try again.";
+    }
+}
+
 // Fetch user's tips from all categories
 $tips_sql = "SELECT t.*, c.category_name 
              FROM tips t 
@@ -178,8 +200,32 @@ $conn->close();
             color: #666;
             padding: 20px;
         }
-        .t{
+        .delete-tip-btn {
+            background-color: #dc3545;
+            margin-top: auto;
+            align-self: flex-end; 
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
 
+        .delete-tip-btn:hover {
+            background-color: #c82333;
+        }
+
+        .tip-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .delete-tip-form {
+            display: inline;
         }
     </style>
 </head>
@@ -252,8 +298,11 @@ $conn->close();
                 </div>
                 
             </div>
-            <div class="user-tips-section">
+                <div class="user-tips-section">
                     <h3 class="t"><br>My Tips</h3>
+                    <?php if (isset($delete_error)): ?>
+                        <div class="error-message"><?php echo $delete_error; ?></div>
+                    <?php endif; ?>
                     <?php if (empty($user_tips)): ?>
                         <div class="no-tips">
                             <p>You haven't added any tips yet. Click "Add Tip" to share your knowledge!</p>
@@ -275,9 +324,16 @@ $conn->close();
                                                 </video>
                                             <?php endif; ?>
                                         </div>
+                                        <div class="tip-date">
+                                            Added on: <?php echo date('F j, Y', strtotime($tip['created_at'])); ?>
+                                        </div>
                                     <?php endif; ?>
-                                    <div class="tip-date">
-                                        Added on: <?php echo date('F j, Y', strtotime($tip['created_at'])); ?><br><br>
+                                    <div class="tip-actions">
+                                        
+                                        <form class="delete-tip-form" method="POST" onsubmit="return confirm('Are you sure you want to delete this tip?');">
+                                            <input type="hidden" name="tip_id" value="<?php echo $tip['tip_id']; ?>">
+                                            <button type="submit" name="delete_tip" class="delete-tip-btn">Delete</button>
+                                        </form>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -306,7 +362,7 @@ $conn->close();
         });
 
         document.getElementById('edit-profile-btn').addEventListener('click', function() {
-            window.location.href = 'edit_profile.php';
+            window.location.href = 'edit_urs_profile.php';
         });
 
         document.getElementById('feedback-btn').addEventListener('click', function() {

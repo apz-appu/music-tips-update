@@ -20,11 +20,11 @@ $user = $result->fetch_assoc(); // Fetch the user details
 
 $category = 1; 
 // Prepare the query to fetch tips for the selected category
-$query = "SELECT tips.tip_id, tips.tip_content, tips.created_at, user.username 
+$query = "SELECT tips.tip_id, tips.tip_content, tips.created_at, tips.media_type, tips.media_path, user.username 
           FROM tips
           JOIN user ON tips.user_id = user.user_id
           WHERE tips.category_id = ?
-          ORDER BY tips.created_at DESC"; // Added ordering by date
+          ORDER BY tips.created_at DESC";// Added ordering by date
 
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $category);
@@ -54,7 +54,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vocal Tips</title>
+    <title>Guitar Tips</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -235,9 +235,9 @@ $stmt->close();
             border-radius: 5px;
             cursor: pointer;
         }
-
+        
         .sear{
-            padding-left: 72%;
+            padding-left: 71%;
         }
     </style>
 </head>
@@ -291,6 +291,15 @@ $stmt->close();
                     </div>
                     <div class="tip-body">
                         <p><?php echo nl2br(htmlspecialchars($row['tip_content'])); ?></p>
+
+                        <?php if ($row['media_type'] == 'image' && !empty($row['media_path'])) { ?>
+                            <img src="<?php echo htmlspecialchars($row['media_path']); ?>" alt="Tip Image" class="tip-media" style="max-width:60%; height:auto;">
+                        <?php } elseif ($row['media_type'] == 'video' && !empty($row['media_path'])) { ?>
+                            <video controls class="tip-media" style="max-width:100%;">
+                                <source src="<?php echo htmlspecialchars($row['media_path']); ?>" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        <?php } ?>
                     </div>
                     <div class="tip-footer">
                         <button class="view-reviews-btn" data-tip-id="<?php echo $row['tip_id']; ?>">View Reviews</button>
@@ -308,106 +317,93 @@ $stmt->close();
             }
             ?>
         </div>
+
     </div>
 
+    <!-- Modal for adding reviews -->
+    <div class="modal" id="review-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Add Your Review</h3>
+            <form class="review-form" id="review-form">
+                <input type="hidden" id="tip-id" name="tip_id">
+                <textarea name="review_content" rows="4" placeholder="Write your review here..." required></textarea>
+                <button type="submit" class="submit-review">Submit Review</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('review-modal');
-            const closeModal = document.querySelector('.close-modal');
-            
-            // View Reviews functionality
-            document.querySelectorAll('.view-reviews-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const tipId = this.getAttribute('data-tip-id');
-                    const reviewsSection = document.querySelector(`#reviews-${tipId}`);
-                    
-                    if (reviewsSection.style.display === 'none' || !reviewsSection.style.display) {
-                        fetch('vocal.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `get_reviews=1&tip_id=${tipId}`
-                        })
-                        .then(response => response.json())
-                        .then(reviews => {
-                            const reviewsContent = reviewsSection.querySelector('.reviews-content');
-                            reviewsContent.innerHTML = '';
-                            
-                            reviews.forEach(review => {
-                                const reviewElement = `
-                                    <div class="review-item">
-                                        <img src="${review.avatar_url || 'images/default-avatar.png'}" alt="Reviewer Avatar" class="review-avatar">
-                                        <div class="review-content-wrapper">
-                                            <div class="review-header">
-                                                <span class="review-author">${review.username}</span>
-                                                <span class="review-date">${new Date(review.created_at).toLocaleString()}</span>
-                                            </div>
-                                            <div class="review-content">${review.review_content}</div>
-                                        </div>
-                                    </div>
-                                `;
-                                reviewsContent.innerHTML += reviewElement;
-                            });
-                            
-                            reviewsSection.style.display = 'block';
-                            button.textContent = 'Hide Reviews';
-                        });
-                    } else {
-                        reviewsSection.style.display = 'none';
-                        button.textContent = 'View Reviews';
-                    }
-                });
-            });
-
-            // Review button click handler
-            document.querySelectorAll('.review-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const tipId = this.getAttribute('data-tip-id');
-                    document.getElementById('tip-id').value = tipId;
-                    modal.style.display = 'block';
-                });
-            });
-
-            // Close modal
-            closeModal.addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
-
-            // Close modal when clicking outside
-            window.addEventListener('click', (event) => {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            });
-
-            // Handle review submission
-            document.getElementById('review-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                
-                fetch('add_review.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        modal.style.display = 'none';
-                        // Refresh the reviews section
-                        const tipId = document.getElementById('tip-id').value;
-                        document.querySelector(`[data-tip-id="${tipId}"].view-reviews-btn`).click();
-                    } else {
-                        alert('Error adding review. Please try again.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error adding review. Please try again.');
-                });
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle review button clicks
+    const reviewButtons = document.querySelectorAll('.review-btn');
+    reviewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tipId = this.getAttribute('data-tip-id');
+            // Redirect to the review form with the tip_id
+            window.location.href = `add_review.php?tip_id=${tipId}`;
         });
-    </script>
+    });
+
+    // Handle view reviews button clicks
+    const viewReviewsButtons = document.querySelectorAll('.view-reviews-btn');
+    viewReviewsButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const tipId = this.getAttribute('data-tip-id');
+            const reviewsSection = document.getElementById(`reviews-${tipId}`);
+            const reviewsContent = reviewsSection.querySelector('.reviews-content');
+
+            // Toggle reviews section visibility
+            if (reviewsSection.style.display === 'none' || !reviewsSection.style.display) {
+                reviewsSection.style.display = 'block';
+                
+                // Fetch reviews
+                try {
+                    const response = await fetch('guitar.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `get_reviews=1&tip_id=${tipId}`
+                    });
+                    
+                    const reviews = await response.json();
+                    
+                    // Clear existing reviews
+                    reviewsContent.innerHTML = '';
+                    
+                    // Add reviews to the section
+                    reviews.forEach(review => {
+                        const reviewDate = new Date(review.created_at).toLocaleString();
+                        const reviewHtml = `
+                            <div class="review-item">
+                                <div class="review-content-wrapper">
+                                    <div class="review-header">
+                                        <span class="review-author">${review.username}</span>
+                                        <span class="review-date">${reviewDate}</span>
+                                    </div>
+                                    <div class="review-content">
+                                        ${review.review_content}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        reviewsContent.innerHTML += reviewHtml;
+                    });
+
+                    if (reviews.length === 0) {
+                        reviewsContent.innerHTML = '<p>No reviews yet.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error fetching reviews:', error);
+                    reviewsContent.innerHTML = '<p>Error loading reviews.</p>';
+                }
+            } else {
+                reviewsSection.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

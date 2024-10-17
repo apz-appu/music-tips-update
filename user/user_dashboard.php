@@ -7,9 +7,6 @@ if (!isset($_SESSION['signup_id'])) {
     header("Location: ../home/testhome.php");
     exit();
 }
-
-// You can fetch more user details from the database if needed using the session user_id
-// Assuming you have a connection file for the database
 include('../home/table.php');
 
 // Fetch user details from the database using session user_id

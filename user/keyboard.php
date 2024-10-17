@@ -54,7 +54,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keyboard Tips</title>
+    <title>Guitar Tips</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -235,9 +235,9 @@ $stmt->close();
             border-radius: 5px;
             cursor: pointer;
         }
-
+        
         .sear{
-            padding-left: 68%;
+            padding-left: 71%;
         }
     </style>
 </head>
@@ -320,6 +320,19 @@ $stmt->close();
 
     </div>
 
+    <!-- Modal for adding reviews -->
+    <div class="modal" id="review-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Add Your Review</h3>
+            <form class="review-form" id="review-form">
+                <input type="hidden" id="tip-id" name="tip_id">
+                <textarea name="review_content" rows="4" placeholder="Write your review here..." required></textarea>
+                <button type="submit" class="submit-review">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Handle review button clicks
@@ -346,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Fetch reviews
                 try {
-                    const response = await fetch('keyboard.php', {
+                    const response = await fetch('guitar.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',

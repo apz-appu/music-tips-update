@@ -79,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($stmt->execute()) {
         $_SESSION['success'] = "Tip added successfully!";
-        header("Location: user_dashboard.php");
+        header("Location: usere.php");
         exit();
     } else {
         $_SESSION['error'] = "Error adding tip: " . $conn->error;
@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .min-h-screen {
-            min-height: 100vh;
+            min-height: 80vh;
         }
 
         .bg-gray-100 {
@@ -109,10 +109,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         .tip-form-container {
             max-width: 48rem;
-            margin: .5rem auto;
+            margin: 2px auto;
             background: black;
             border-radius: 0.5rem;
-            box-shadow:  0 10px 30px rgba(20, 204, 255, 0.976);
+            box-shadow: 0 10px 30px rgba(20, 204, 255, 0.976);
             overflow: hidden;
         }
 
@@ -221,6 +221,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background-color: #16a34a;
         }
 
+        .cancel-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #565f5a;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background-color: rgb(154, 85, 85);
+        }
+
         .error-message {
             background-color: #fee2e2;
             color: #dc2626;
@@ -265,23 +282,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 <?php endif; ?>
 
-                <form action="add_tip.php" method="POST" enctype="multipart/form-data">
+                <form id="addTipForm" action="add_tip.php" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label class="form-label" for="category_id">Category:</label>
-                        <select class="form-select" name="category_id" id="category_id" required>
+                        <label for="category" class="form-label">Category</label>
+                        <select name="category_id" class="form-select">
                             <option value="">Select a category</option>
-                            <?php while($category = $categories->fetch_assoc()): ?>
+                            <?php while ($category = $categories->fetch_assoc()): ?>
                                 <option value="<?php echo $category['category_id']; ?>">
-                                    <?php echo htmlspecialchars($category['category_name']); ?>
+                                    <?php echo $category['category_name']; ?>
                                 </option>
                             <?php endwhile; ?>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="tip_content">Tip Content:</label>
-                        <textarea class="form-textarea" name="tip_content" id="tip_content" required 
-                                placeholder="Share your musical tip here..."></textarea>
+                        <label for="tip_content" class="form-label">Tip Content</label>
+                        <textarea name="tip_content" class="form-textarea"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -295,13 +311,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div id="media-preview" class="media-preview"></div>
                     </div>
 
-                    <button type="submit" class="submit-btn">Submit Tip</button>
+                    <button type="submit" class="submit-btn">Add Tip</button><br><br>
+                    <button type="button" class="cancel-btn" onclick="window.location.href='usere.php'">Cancel</button>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
+        document.getElementById('addTipForm').addEventListener('submit', function(event) {
+            let category = document.querySelector('select[name="category_id"]').value;
+            let content = document.querySelector('textarea[name="tip_content"]').value;
+
+            if (!category || !content) {
+                event.preventDefault();
+                alert('Please fill in all fields.');
+            }
+        });
+
         // Preview uploaded media
         document.getElementById('media').addEventListener('change', function(e) {
             const preview = document.getElementById('media-preview');
