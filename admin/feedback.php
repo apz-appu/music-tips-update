@@ -53,7 +53,7 @@ $conn->close();
                 <li><a href="test.php"><span class="ti-home"></span><span>Home</span></a></li>
                 <li><a href="feedback.php" class="active"><span class="ti-bar-chart"></span><span>Feedback</span></a></li>
                 <li><a href="users.php"><span class=""><ion-icon name="person"></ion-icon></span><span>User</span></a></li>
-                <li><a href="tip.html"><span class="ti-tips"><ion-icon name="bulb"></ion-icon></span><span>Tips</span></a></li>
+                <li><a href="tip.php"><span class="ti-tips"><ion-icon name="bulb"></ion-icon></span><span>Tips</span></a></li>
                 <li class="add"><a href="admine.php"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>Admin</span></a></li>
             </ul>
         </div>

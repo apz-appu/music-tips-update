@@ -59,7 +59,7 @@ $result = $conn->query($sql);
                 <li><a href="test.php"><span class="ti-home"></span><span>Home</span></a></li>
                 <li><a href="feedback.php"><span class="ti-bar-chart"></span><span>Feedback</span></a></li>
                 <li><a href="users.php" class="active"><span><ion-icon name="person"></ion-icon></span><span>User</span></a></li>
-                <li><a href="tip.html"><span class="ti-tips"></span><ion-icon name="bulb"></ion-icon><span>Tips</span></a></li>
+                <li><a href="tip.php"><span class="ti-tips"></span><ion-icon name="bulb"></ion-icon><span>Tips</span></a></li>
                 <li class="add"><a href="admine.html"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>Admin</span></a></li>
             </ul>
         </div>

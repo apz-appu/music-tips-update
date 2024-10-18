@@ -1,22 +1,14 @@
 <?php
 session_start();
 
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "mydb";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!isset($_SESSION['signup_id'])) {
+    header("Location: ../home/testhome.php");
+    exit();
 }
+include('../home/table.php');
 
 // Fetch admin data (assuming admin_id is stored in session)
-$admin_id = isset($_SESSION['admin_id']) ? $_SESSION['admin_id'] : 1; // Default to 1 if not set
+$admin_id = isset($_SESSION['signup_id']) ? $_SESSION['signup_id'] : 1; // Default to 1 if not set
 
 // Prepare the SQL query to join the necessary tables
 $admin_sql = "SELECT a.admin_name, a.email, a.added_at, 
@@ -25,8 +17,6 @@ $admin_sql = "SELECT a.admin_name, a.email, a.added_at,
                FROM admin a
                LEFT JOIN sign_up s ON a.email = s.email
                WHERE a.admin_id = ?";
-
-
 
 $stmt = $conn->prepare($admin_sql);
 $stmt->bind_param("i", $admin_id);
@@ -60,6 +50,51 @@ $conn->close();
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        .profile-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
     <div class="slidebar">
@@ -76,7 +111,7 @@ $conn->close();
                 <li><a href="test.php"><span class="ti-home"></span><span>Home</span></a></li>
                 <li><a href="feedback.php"><span class="ti-bar-chart"></span><span>Feedback</span></a></li>
                 <li><a href="users.php"><span class=""><ion-icon name="person"></ion-icon></span><span>User</span></a></li>
-                <li><a href="tip.html"><span class="ti-tips"><ion-icon name="bulb"></ion-icon></span><span>Tips</span></a></li>
+                <li><a href="tip.php"><span class="ti-tips"><ion-icon name="bulb"></ion-icon></span><span>Tips</span></a></li>
                 <li class="add"><a href="admine.php" class="active"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>Admin</span></a></li>
             </ul>
         </div>
@@ -126,22 +161,34 @@ $conn->close();
                     </div>
                 </div>
 
-                
-                <!-- Log Out Button -->
-                <button id="logout-btn" class="logout-btn">Log Out</button>
+                <div class="button-container">
+                    <button id="add-news-btn" class="btn btn-primary">Add News</button>
+                    <button id="edit-profile-btn" class="btn btn-secondary">Edit Profile</button>
+                    <button id="logout-btn" class="btn btn-danger">Log Out</button>
+                </div>
             </div>
         </main>
     </div>
 
     <script>
+        // Add News button handler
+        document.getElementById('add-news-btn').addEventListener('click', function() {
+            window.location.href = 'add-news.php'; // Navigate to add news page
+        });
+
+        // Edit Profile button handler
+        document.getElementById('edit-profile-btn').addEventListener('click', function() {
+            window.location.href = 'edit_profile_admin.php';
+        });
+
+        // Existing Logout button handler
         document.getElementById('logout-btn').addEventListener('click', function() {
-            // Send request to logout.php
             fetch('logout.php', {
                 method: 'POST'
             })
             .then(response => {
                 if (response.ok) {
-                    window.location.href = '../home/testhome.php'; // Redirect to homepage after logout
+                    window.location.href = '../home/testhome.php';
                 } else {
                     alert('Error logging out');
                 }
