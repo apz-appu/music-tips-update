@@ -266,14 +266,13 @@ $stmt->close();
     <div class="main-content">
         <header>
             <h2>Guitar Tips</h2>
-            <div class="sear">
-                <span class="ti-search"></span>
-                <input type="search" placeholder="Search">
-            </div>
-            <div class="social-icons">
-                <span class="ti-bell"></span>
-                <span class="ti-comment"></span>
-            </div>
+            
+                <!-- Search Form -->
+            <form method="GET" action="search_category_spl.php">
+                <input type="search" name="query" placeholder="Search..." >
+                <button type="submit"><span class="ti-search"></span></button>
+            </form>
+           
         </header>
 
         <div class="tips-container">

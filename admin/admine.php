@@ -7,45 +7,82 @@ if (!isset($_SESSION['signup_id'])) {
 }
 include('../home/table.php');
 
-// Fetch admin data (assuming admin_id is stored in session)
-$admin_id = isset($_SESSION['signup_id']) ? $_SESSION['signup_id'] : 1; // Default to 1 if not set
+// Fetch admin data
+$admin_id = isset($_SESSION['signup_id']) ? $_SESSION['signup_id'] : 1;
 
-// Prepare the SQL query to join the necessary tables
-$admin_sql = "SELECT a.admin_name, a.email, a.added_at, 
-               IFNULL(s.signup_time, 'N/A') as signup_time, 
-               (SELECT MAX(login_time) FROM log_in l WHERE l.email = a.email) as last_login
-               FROM admin a
-               LEFT JOIN sign_up s ON a.email = s.email
-               WHERE a.admin_id = ?";
+// Modified SQL query to properly join tables and handle relationships
+$admin_sql = "SELECT 
+    a.admin_id,
+    a.admin_name, 
+    a.email, 
+    a.added_at,
+    s.signup_time,
+    COALESCE((
+        SELECT MAX(login_time) 
+        FROM log_in l 
+        WHERE l.email = a.email
+    ), 'Never logged in') as last_login
+FROM admin a
+INNER JOIN sign_up s ON a.signup_id = s.signup_id
+WHERE a.signup_id = ?";
 
-$stmt = $conn->prepare($admin_sql);
-$stmt->bind_param("i", $admin_id);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    $stmt = $conn->prepare($admin_sql);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
 
-if ($result->num_rows > 0) {
-    $admin_data = $result->fetch_assoc();
-} else {
-    // Handle case where admin is not found
+    $stmt->bind_param("i", $admin_id);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $admin_data = $result->fetch_assoc();
+        
+        // Format dates for better display
+        $admin_data['added_at'] = date('F j, Y g:i A', strtotime($admin_data['added_at']));
+        $admin_data['signup_time'] = date('F j, Y g:i A', strtotime($admin_data['signup_time']));
+        if ($admin_data['last_login'] !== 'Never logged in') {
+            $admin_data['last_login'] = date('F j, Y g:i A', strtotime($admin_data['last_login']));
+        }
+    } else {
+        // Handle case where admin is not found
+        $admin_data = [
+            'admin_name' => 'Admin Not Found',
+            'email' => 'N/A',
+            'added_at' => 'N/A',
+            'signup_time' => 'N/A',
+            'last_login' => 'N/A'
+        ];
+        error_log("No admin found for signup_id: " . $admin_id);
+    }
+} catch (Exception $e) {
+    error_log("Error in admin profile: " . $e->getMessage());
     $admin_data = [
-        'admin_name' => 'Admin Not Found',
+        'admin_name' => 'Error Loading Profile',
         'email' => 'N/A',
         'added_at' => 'N/A',
         'signup_time' => 'N/A',
         'last_login' => 'N/A'
     ];
+} finally {
+    if (isset($stmt)) {
+        $stmt->close();
+    }
+    $conn->close();
 }
-
-$stmt->close();
-$conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Profile</title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -101,7 +138,7 @@ $conn->close();
         <div class="slidebar-header">
             <h3 class="brand">
                 <span class="ti-music-alt"></span>
-                <span>Music Tips and Tricks</span>
+                <span>Melophile</span>
             </h3>
             <span class="ti-menu-alt"></span>
         </div>
@@ -112,6 +149,7 @@ $conn->close();
                 <li><a href="feedback.php"><span class="ti-bar-chart"></span><span>Feedback</span></a></li>
                 <li><a href="users.php"><span class=""><ion-icon name="person"></ion-icon></span><span>User</span></a></li>
                 <li><a href="tip.php"><span class="ti-tips"><ion-icon name="bulb"></ion-icon></span><span>Tips</span></a></li>
+                <li><a href="anews.php"><ion-icon name="newspaper"></ion-icon><span>News</span></a></li>
                 <li class="add"><a href="admine.php" class="active"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>Admin</span></a></li>
             </ul>
         </div>
@@ -173,7 +211,7 @@ $conn->close();
     <script>
         // Add News button handler
         document.getElementById('add-news-btn').addEventListener('click', function() {
-            window.location.href = 'add-news.php'; // Navigate to add news page
+            window.location.href = 'add_news.php'; // Navigate to add news page
         });
 
         // Edit Profile button handler

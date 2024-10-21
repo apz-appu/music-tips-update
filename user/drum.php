@@ -55,6 +55,7 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guitar Tips</title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -266,13 +267,12 @@ $stmt->close();
     <div class="main-content">
         <header>
             <h2>Drums Tips</h2>
-            <div class="sear">
-                <span class="ti-search"></span>
-                <input type="search" placeholder="Search">
-            </div>
-            <div class="social-icons">
-                <span class="ti-bell"></span>
-                <span class="ti-comment"></span>
+            <div >
+                <!-- Search Form -->
+            <form method="GET" action="search_category_spl.php">
+                <input type="search" name="query" placeholder="Search..." >
+                <button type="submit"><span class="ti-search"></span></button>
+            </form>
             </div>
         </header>
 
@@ -293,7 +293,7 @@ $stmt->close();
                         <p><?php echo nl2br(htmlspecialchars($row['tip_content'])); ?></p>
 
                         <?php if ($row['media_type'] == 'image' && !empty($row['media_path'])) { ?>
-                            <img src="<?php echo htmlspecialchars($row['media_path']); ?>" alt="Tip Image" class="tip-media" style="max-width:60%; height:auto;">
+                            <img src="<?php echo htmlspecialchars($row['media_path']); ?>" alt="Tip Image" class="tip-media" style="max-width:50%; height:auto;">
                         <?php } elseif ($row['media_type'] == 'video' && !empty($row['media_path'])) { ?>
                             <video controls class="tip-media" style="max-width:100%;">
                                 <source src="<?php echo htmlspecialchars($row['media_path']); ?>" type="video/mp4">

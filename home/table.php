@@ -157,6 +157,24 @@ if (mysqli_query($conn, $sql)) {
     echo "<br>Error creating review table: " . mysqli_error($conn);
 }
 
+//Table-9 news by admin
+$sql = "CREATE TABLE IF NOT EXISTS add_news (
+    news_id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT,
+    content TEXT NOT NULL,
+    added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    media_path VARCHAR(255), 
+    media_type ENUM('image', 'video'),  
+    FOREIGN KEY (admin_id) REFERENCES admin(admin_id) ON DELETE CASCADE
+)";
+
+
+if ($conn->query($sql) === TRUE) {
+    echo "";
+} else {
+    echo "Error creating table: " . $conn->error;
+}
+
 // Create trigger for admin insert into sign_up
 $sql = "
 CREATE TRIGGER IF NOT EXISTS after_admin_insert

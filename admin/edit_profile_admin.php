@@ -12,10 +12,7 @@ $success_message = '';
 $error_message = '';
 
 // Fetch current admin data
-$stmt = $conn->prepare("SELECT a.*, s.phone 
-                       FROM admin a 
-                       LEFT JOIN sign_up s ON a.signup_id = s.signup_id 
-                       WHERE a.admin_id = ?");
+$stmt = $conn->prepare("SELECT * FROM admin WHERE signup_id = ?");
 $stmt->bind_param("i", $admin_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -24,26 +21,31 @@ $admin_data = $result->fetch_assoc();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $admin_name = trim($_POST['admin_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
     $current_password = $_POST['current_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     
-    if (empty($admin_name) || empty($email) || empty($phone)) {
-        $error_message = "Name, email and phone are required fields.";
+    if (empty($admin_name) || empty($email)) {
+        $error_message = "Name and email are required fields.";
     } else {
         $conn->begin_transaction();
 
         try {
-            // Verify current password if attempting to change password
-            if (!empty($new_password)) {
-                $verify_pwd = $conn->prepare("SELECT password FROM admin WHERE admin_id = ?");
+            // Check if password change is requested
+            if (!empty($current_password) || !empty($new_password) || !empty($confirm_password)) {
+                // All password fields must be filled if any are filled
+                if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+                    throw new Exception("All password fields must be filled to change password");
+                }
+
+                // Verify current password - FIXED VERSION
+                $verify_pwd = $conn->prepare("SELECT password FROM admin WHERE signup_id = ?");
                 $verify_pwd->bind_param("i", $admin_id);
                 $verify_pwd->execute();
                 $pwd_result = $verify_pwd->get_result();
-                $current_hash = $pwd_result->fetch_assoc()['password'];
-
-                if (!password_verify($current_password, $current_hash)) {
+                $row = $pwd_result->fetch_assoc();
+                
+                if (!$row || !password_verify($current_password, $row['password'])) {
                     throw new Exception("Current password is incorrect");
                 }
 
@@ -51,27 +53,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     throw new Exception("New passwords do not match");
                 }
 
-                // Update password
+                if (strlen($new_password) < 6) {
+                    throw new Exception("New password must be at least 6 characters long");
+                }
+
+                // Update password in both tables
                 $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
-                $update_password = $conn->prepare("UPDATE admin SET password = ? WHERE admin_id = ?");
-                $update_password->bind_param("si", $new_hash, $admin_id);
-                $update_password->execute();
+                
+                $update_admin_password = $conn->prepare("UPDATE admin SET password = ? WHERE signup_id = ?");
+                $update_admin_password->bind_param("si", $new_hash, $admin_id);
+                if (!$update_admin_password->execute()) {
+                    throw new Exception("Error updating admin password");
+                }
+                
+                $update_signup_password = $conn->prepare("UPDATE sign_up SET password = ? WHERE signup_id = ?");
+                $update_signup_password->bind_param("si", $new_hash, $admin_id);
+                if (!$update_signup_password->execute()) {
+                    throw new Exception("Error updating signup password");
+                }
+            }
+
+            // Check if email already exists for another user
+            $check_email = $conn->prepare("SELECT signup_id FROM admin WHERE email = ? AND signup_id != ?");
+            $check_email->bind_param("si", $email, $admin_id);
+            $check_email->execute();
+            if ($check_email->get_result()->num_rows > 0) {
+                throw new Exception("Email already exists");
+            }
+
+            // Check if username already exists for another user
+            $check_username = $conn->prepare("SELECT signup_id FROM admin WHERE admin_name = ? AND signup_id != ?");
+            $check_username->bind_param("si", $admin_name, $admin_id);
+            $check_username->execute();
+            if ($check_username->get_result()->num_rows > 0) {
+                throw new Exception("Username already exists");
             }
 
             // Update admin table
-            $update_admin = $conn->prepare("UPDATE admin SET admin_name = ?, email = ? WHERE admin_id = ?");
+            $update_admin = $conn->prepare("UPDATE admin SET admin_name = ?, email = ? WHERE signup_id = ?");
             $update_admin->bind_param("ssi", $admin_name, $email, $admin_id);
             $update_admin->execute();
             
             // Update sign_up table
-            $update_signup = $conn->prepare("UPDATE sign_up SET phone = ? WHERE signup_id = ?");
-            $update_signup->bind_param("si", $phone, $admin_data['signup_id']);
+            $update_signup = $conn->prepare("UPDATE sign_up SET user_name = ?, email = ? WHERE signup_id = ?");
+            $update_signup->bind_param("ssi", $admin_name, $email, $admin_id);
             $update_signup->execute();
 
             $conn->commit();
             $success_message = "Profile updated successfully!";
             
-            // Refresh admin data after update
+            // Refresh admin data
             $stmt->execute();
             $admin_data = $stmt->get_result()->fetch_assoc();
             
@@ -79,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         } catch (Exception $e) {
             $conn->rollback();
-            $error_message = "Error updating profile: " . $e->getMessage();
+            $error_message = $e->getMessage();
         }
     }
 }
@@ -91,6 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Admin Profile</title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .min-h-screen { min-height: 80vh; }
@@ -125,32 +157,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         <div class="form-content">
             <?php if ($error_message): ?>
-                <div class="error-message"><?= $error_message ?></div>
+                <div class="error-message"><?= htmlspecialchars($error_message) ?></div>
             <?php endif; ?>
             
             <?php if ($success_message): ?>
-                <div class="success-message"><?= $success_message ?></div>
+                <div class="success-message"><?= htmlspecialchars($success_message) ?></div>
             <?php endif; ?>
             
             <form method="post" action="">
                 <div class="form-group">
                     <label for="admin_name" class="form-label">Admin Username:</label>
                     <input type="text" id="admin_name" name="admin_name" 
-                           value="<?= isset($admin_data['admin_name']) ? htmlspecialchars($admin_data['admin_name']) : '' ?>" 
+                           value="<?= htmlspecialchars($admin_data['admin_name'] ?? '') ?>" 
                            required class="form-input">
                 </div>
                 
                 <div class="form-group">
                     <label for="email" class="form-label">Email:</label>
                     <input type="email" id="email" name="email" 
-                           value="<?= isset($admin_data['email']) ? htmlspecialchars($admin_data['email']) : '' ?>" 
-                           required class="form-input">
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone" class="form-label">Phone:</label>
-                    <input type="text" id="phone" name="phone" 
-                           value="<?= isset($admin_data['phone']) ? htmlspecialchars($admin_data['phone']) : '' ?>" 
+                           value="<?= htmlspecialchars($admin_data['email'] ?? '') ?>" 
                            required class="form-input">
                 </div>
 
@@ -180,9 +205,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <div class="preview">
                 <h2>Current Information</h2>
-                <p><strong>Admin Username:</strong> <?= isset($admin_data['admin_name']) ? htmlspecialchars($admin_data['admin_name']) : 'N/A' ?></p>
-                <p><strong>Email:</strong> <?= isset($admin_data['email']) ? htmlspecialchars($admin_data['email']) : 'N/A' ?></p>
-                <p><strong>Phone:</strong> <?= isset($admin_data['phone']) ? htmlspecialchars($admin_data['phone']) : 'N/A' ?></p>
+                <p><strong>Admin Username:</strong> <?= htmlspecialchars($admin_data['admin_name'] ?? 'N/A') ?></p>
+                <p><strong>Email:</strong> <?= htmlspecialchars($admin_data['email'] ?? 'N/A') ?></p>
             </div>
         </div>
     </div>
@@ -191,7 +215,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (typeof redirectFlag !== 'undefined' && redirectFlag) {
         setTimeout(function() {
             window.location.href = 'admine.php';
-        }, 3000); // Redirect after 3 seconds
+        }, 2000); // Redirect after 2 seconds
     }
     </script>
 </body>

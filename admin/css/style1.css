@@ -59,7 +59,7 @@
  }
  
  .sidebar-menu li.add {
-    padding-top: 23rem;
+    padding-top: 20rem;
  }
 
  .sidebar-menu a {
@@ -145,20 +145,7 @@
      color: var(--main-color);
  }
  
- /* Feedback Section */
- .feedback-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.feedback-table th, .feedback-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-.feedback-table th {
-    background-color: #f2f2f2;
-}
- 
+
  /* User Section */
  .user-section {
      margin-top: 100px;

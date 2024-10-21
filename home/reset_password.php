@@ -9,7 +9,7 @@ if (isset($_GET['token'])) {
     $token = $_GET['token'];
     
     // Use prepared statement to verify token in sign_up table
-    $stmt = $conn->prepare("SELECT * FROM sign_up WHERE reset_token = ? AND reset_token_expires > NOW() AND user_type = 'user'");
+    $stmt = $conn->prepare("SELECT * FROM sign_up WHERE reset_token = ? AND user_type = 'user'");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -56,7 +56,8 @@ if (isset($_GET['token'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - Music Tips</title>
+    <title>Reset Password </title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <style>
        
         body {

@@ -92,23 +92,24 @@
  
 
  header {
+    top: 0; 
      display: flex;
      justify-content: space-between;
      align-items: center;
      background: #fff;
      padding: 1rem;
      position: fixed;
-     top: 0;
+     
      left: 240px;
      width: calc(100% - 240px);
      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
  }
- 
+
  header input[type="search"] {
      padding: 0.5rem;
      border: 1px solid #ccc;
      border-radius: 5px;
- }
+ } 
  
  .main
  {
@@ -383,7 +384,38 @@
     background-color: #0056b3;
 }
 
-.sear{
-    padding-left: 60%;
+.sear,.query{
+    padding-left: 45%;
 }
+
+/* Style for the back button */
+.back-btn {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.back-btn button, .back-btn a {
+    background-color: #4CAF50; /* Green background */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn button:hover, .back-btn a:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.back-btn button:focus{
+    outline: none;
+    box-shadow: 0 0 5px #4CAF50; /* Focus effect */
+}
+
 

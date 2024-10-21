@@ -44,6 +44,8 @@ $result = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tips</title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -113,6 +115,7 @@ $result = $conn->query($sql);
                 <li><a href="feedback.php"><span class="ti-bar-chart"></span><span>Feedback</span></a></li>
                 <li><a href="users.php"><span class=""><ion-icon name="person"></ion-icon></span><span>User</span></a></li>
                 <li><a href="tip.php" class="active"><span class="ti-tips"><ion-icon name="bulb"></ion-icon></span><span>Tips</span></a></li>
+                <li><a href="anews.php"><ion-icon name="newspaper"></ion-icon><span>News</span></a></li>
                 <li class="add"><a href="admine.php"><span class="ti-tips"><ion-icon name="shield"></ion-icon></span><span>Admin</span></a></li>
             </ul>
         </div>

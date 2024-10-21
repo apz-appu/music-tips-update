@@ -45,12 +45,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $unique_filename = uniqid() . '.' . $extension;
         
         // Determine media type and set upload directory
-        if (in_array($file_type, $allowed_image_types)) {
-            $media_type = 'image';
-            $upload_dir = '../uploads/images/';
-        } elseif (in_array($file_type, $allowed_video_types)) {
+        if  (in_array($file_type, $allowed_video_types)) {
             $media_type = 'video';
             $upload_dir = '../uploads/videos/';
+        } elseif(in_array($file_type, $allowed_image_types)) {
+            $media_type = 'image';
+            $upload_dir = '../uploads/images/';
         } else {
             $_SESSION['error'] = "Invalid file type. Please upload an image (JPEG, PNG, GIF) or video (MP4, WebM, OGG).";
             header("Location: add_tip.php");
@@ -95,6 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Tip</title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">

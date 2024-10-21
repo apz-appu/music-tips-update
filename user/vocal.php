@@ -55,6 +55,7 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guitar Tips</title>
+    <link rel="icon" type="image/png" href="../image/indexnbg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lykmapipo/themify-icons@0.1.2/css/themify-icons.css">
     <link rel="stylesheet" href="css/style1.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -265,17 +266,18 @@ $stmt->close();
 
     <div class="main-content">
         <header>
+        
             <h2>Vocal Tips</h2>
-            <div class="sear">
-                <span class="ti-search"></span>
-                <input type="search" placeholder="Search">
+            <div >
+                <!-- Search Form -->
+                <form method="GET" action="search_category_spl.php">
+                    <input type="search" name="query" placeholder="Search..." >
+                    <button type="submit"><span class="ti-search"></span></button>
+                </form>
             </div>
-            <div class="social-icons">
-                <span class="ti-bell"></span>
-                <span class="ti-comment"></span>
-            </div>
-        </header>
-
+        
+       
+    </header>
         <div class="tips-container">
             <?php 
             if ($result->num_rows > 0) {
