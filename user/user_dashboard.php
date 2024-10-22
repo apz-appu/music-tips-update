@@ -56,10 +56,10 @@ $news_result = $conn->query($news_sql);
             transition: transform 0.2s;
         }
 
-        .news-item:hover {
+        /* .news-item:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
+        } */
 
         .news-header {
             display: flex;
@@ -82,7 +82,7 @@ $news_result = $conn->query($news_sql);
         }
 
         .news-media {
-            max-width: 100%;
+            max-width: 60%;
             height: auto;
             margin: 1rem 0;
             border-radius: 4px;
@@ -273,7 +273,7 @@ $news_result = $conn->query($news_sql);
                     <?php while ($news = $news_result->fetch_assoc()): ?>
                         <div class="news-item">
                             <div class="news-header">
-                                <h4><?php echo htmlspecialchars($news['admin_name']); ?></h4>
+                                <h4><?php echo htmlspecialchars('Admin ®'); ?></h4>
                                 <div class="news-meta">
                                     Posted on: <?php echo date('F j, Y g:i A', strtotime($news['added_at'])); ?>
                                 </div>

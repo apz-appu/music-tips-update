@@ -1,6 +1,7 @@
 <?php
 session_start();
-
+// php_info();
+// exit;
 // Check if user is logged in
 if (!isset($_SESSION['signup_id'])) {
     header("Location: ../home/testhome.php");
@@ -59,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Create directory if it doesn't exist
         if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+            mkdir($upload_dir, 777, true);
         }
 
         // Move uploaded file

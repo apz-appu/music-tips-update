@@ -16,43 +16,73 @@ $redirect_flag = false;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['action']) && $_POST['action'] == 'add') {
         $content = trim($_POST['content'] ?? '');
-        $media_type = $_FILES['media']['type'] ?? '';
-        $media_path = '';
+        $media_type = null;
+        $media_path = null;
 
         if (empty($content)) {
             $error_message = "News content is required.";
         } else {
             // Handle file upload
-            if (!empty($_FILES['media']['name'])) {
-                $allowed_types = ['image/jpeg', 'image/png', 'video/mp4'];
-                if (in_array($media_type, $allowed_types)) {
-                    $upload_dir = 'uploads/';
-                    $media_path = $upload_dir . basename($_FILES['media']['name']);
-                    move_uploaded_file($_FILES['media']['tmp_name'], $media_path);
+            if (isset($_FILES['media']) && $_FILES['media']['error'] == 0) {
+                $allowed_image_types = ['image/jpeg', 'image/png'];
+                $allowed_video_types = ['video/mp4'];
+                
+                $file_type = $_FILES['media']['type'];
+                $file_size = $_FILES['media']['size'];
+                $file_name = $_FILES['media']['name'];
+                $file_tmp = $_FILES['media']['tmp_name'];
+                
+                // Generate unique filename
+                $extension = pathinfo($file_name, PATHINFO_EXTENSION);
+                $unique_filename = uniqid() . '.' . $extension;
+                
+                // Determine media type and set upload directory
+                if (in_array($file_type, $allowed_video_types)) {
+                    $media_type = 'video';
+                    $upload_dir = '../uploads/videos/';
+                } elseif(in_array($file_type, $allowed_image_types)) {
+                    $media_type = 'image';
+                    $upload_dir = '../uploads/images/';
                 } else {
-                    $error_message = "Only JPG, PNG images and MP4 videos are allowed.";
+                    $error_message = "Invalid file type. Please upload an image (JPEG, PNG) or video (MP4).";
+                }
+
+                if (!$error_message) {
+                    // Create directory if it doesn't exist
+                    if (!file_exists($upload_dir)) {
+                        mkdir($upload_dir, 0777, true);
+                    }
+
+                    // Move uploaded file
+                    if (move_uploaded_file($file_tmp, $upload_dir . $unique_filename)) {
+                        $media_path = $upload_dir . $unique_filename;
+                    } else {
+                        $error_message = "Failed to upload file.";
+                    }
                 }
             }
 
-            // Get admin_id from admin table using signup_id
-            $admin_stmt = $conn->prepare("SELECT admin_id FROM admin WHERE signup_id = ?");
-            $admin_stmt->bind_param("i", $admin_id);
-            $admin_stmt->execute();
-            $admin_result = $admin_stmt->get_result();
-            $admin_row = $admin_result->fetch_assoc();
+            if (!$error_message) {
+                // Get admin_id from admin table using signup_id
+                $admin_stmt = $conn->prepare("SELECT admin_id FROM admin WHERE signup_id = ?");
+                $admin_stmt->bind_param("i", $admin_id);
+                $admin_stmt->execute();
+                $admin_result = $admin_stmt->get_result();
+                $admin_row = $admin_result->fetch_assoc();
 
-            if ($admin_row) {
-                $actual_admin_id = $admin_row['admin_id'];
+                if ($admin_row) {
+                    $actual_admin_id = $admin_row['admin_id'];
 
-                // Insert news with optional media path
-                $insert_stmt = $conn->prepare("INSERT INTO add_news (admin_id, content, media_path, added_at) VALUES (?, ?, ?, NOW())");
-                $insert_stmt->bind_param("iss", $actual_admin_id, $content, $media_path);
+                    // Insert news with optional media path
+                    $insert_stmt = $conn->prepare("INSERT INTO add_news (admin_id, content, media_path, media_type, added_at) VALUES (?, ?, ?, ?, NOW())");
+                    $insert_stmt->bind_param("isss", $actual_admin_id, $content, $media_path, $media_type);
 
-                if ($insert_stmt->execute()) {
-                    $success_message = "News added successfully!";
-                    $redirect_flag = true;
-                } else {
-                    $error_message = "Failed to add news.";
+                    if ($insert_stmt->execute()) {
+                        $success_message = "News added successfully!";
+                        $redirect_flag = true;
+                    } else {
+                        $error_message = "Failed to add news.";
+                    }
                 }
             }
         }
@@ -155,6 +185,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         @media (max-width: 640px) { 
             .tip-form-container { margin: 1rem; } 
         }
+        .upload-area {
+            border: 2px dashed #22dbdf;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .upload-area:hover {
+            border-color: #22dbdf;
+            background-color: rgba(34, 219, 223, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: #22dbdf;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: 0.875rem;
+            color: #22dbdf;
+        }
+
+        .upload-subtext {
+            font-size: 0.75rem;
+            color: #22dbdf;
+            margin-top: 0.5rem;
+        }
+
+        .media-preview {
+            max-width: 300px;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -182,9 +251,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 
                 <div class="form-group">
-                    <label for="media" class="form-label">Upload Image/Video:</label>
-                    <input type="file" id="media" name="media" class="form-input">
-                    <p class="file-upload-info">Allowed formats: JPG, PNG, MP4</p>
+                    <label class="form-label">Add Media (Optional):</label>
+                    <div class="upload-area" onclick="document.getElementById('media').click()">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <p class="upload-text">Drag and drop or click to upload</p>
+                        <p class="upload-subtext">Supports images (JPG, PNG) and videos (MP4)</p>
+                        <input type="file" name="media" id="media" accept="image/jpeg,image/png,video/mp4" style="display: none;">
+                    </div>
+                    <div id="media-preview" class="media-preview"></div>
                 </div>
                 
                 <div class="button-group">
@@ -200,9 +274,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <script>
+    // Preview uploaded media
+    document.getElementById('media').addEventListener('change', function(e) {
+        const preview = document.getElementById('media-preview');
+        const file = e.target.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.style.display = 'block';
+                if (file.type.startsWith('image/')) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; border-radius: 0.5rem;">`;
+                } else if (file.type.startsWith('video/')) {
+                    preview.innerHTML = `<video controls style="max-width: 100%; border-radius: 0.5rem;">
+                        <source src="${e.target.result}" type="${file.type}">
+                    </video>`;
+                }
+            }
+            
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+            preview.innerHTML = '';
+        }
+    });
+
+    // Drag and drop functionality
+    const uploadArea = document.querySelector('.upload-area');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        uploadArea.style.backgroundColor = '#f9fafb';
+        uploadArea.style.borderColor = '#9ca3af';
+    }
+
+    function unhighlight(e) {
+        uploadArea.style.backgroundColor = '';
+        uploadArea.style.borderColor = '#d1d5db';
+    }
+
+    uploadArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        
+        const input = document.getElementById('media');
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+    }
+
     <?php if ($redirect_flag): ?>
         setTimeout(function() {
-            window.location.href = 'add_news.php';
+            window.location.href = 'anews.php';
         }, 2000);
     <?php endif; ?>
     </script>
