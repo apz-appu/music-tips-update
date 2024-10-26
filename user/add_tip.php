@@ -1,7 +1,5 @@
 <?php
 session_start();
-// php_info();
-// exit;
 // Check if user is logged in
 if (!isset($_SESSION['signup_id'])) {
     header("Location: ../home/testhome.php");

@@ -1,0 +1,11 @@
+# Set maximum allowed file upload size (50MB in this example)
+php_value upload_max_filesize 50M
+
+# Set maximum size of post data (55MB to allow for extra form data)
+php_value post_max_size 55M
+
+# Set max execution time (300 seconds to allow longer processing)
+php_value max_execution_time 300
+
+# Set max input time (300 seconds for input parsing)
+php_value max_input_time 300

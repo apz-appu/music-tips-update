@@ -13,7 +13,7 @@ include('../home/table.php');
 $user_id = $_SESSION['signup_id']; // Default to 1 if not set for testing
 
 // Prepare the SQL query to fetch user data from the `user` table
-$user_sql = "SELECT username, email, phone, added_at FROM user WHERE signup_id = ?";
+$user_sql = "SELECT user_id,username, email, phone, added_at FROM user WHERE signup_id = ?";
 
 $stmt = $conn->prepare($user_sql);
 $stmt->bind_param("i", $user_id);
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_tip'])) {
         $delete_error = "Failed to delete tip. Please try again.";
     }
 }
-
+$uid=$user_data['user_id'];
 // Fetch user's tips from all categories
 $tips_sql = "SELECT t.*, c.category_name 
              FROM tips t 
@@ -63,7 +63,7 @@ $tips_sql = "SELECT t.*, c.category_name
              ORDER BY t.created_at DESC";
 
 $tips_stmt = $conn->prepare($tips_sql);
-$tips_stmt->bind_param("i", $user_id);
+$tips_stmt->bind_param("i", $uid);
 $tips_stmt->execute();
 $tips_result = $tips_stmt->get_result();
 

@@ -242,4 +242,34 @@ if (mysqli_query($conn, $sql)) {
 } else {
     echo "<br>Error creating user delete trigger: " . mysqli_error($conn);
 }
+
+// Create trigger for cleaning up user data before deletion
+$sql = "
+CREATE TRIGGER IF NOT EXISTS before_user_delete
+BEFORE DELETE ON user
+FOR EACH ROW
+BEGIN
+    -- Delete all reviews associated with user's tips
+    DELETE FROM reviews 
+    WHERE tip_id IN (SELECT tip_id FROM tips WHERE user_id = OLD.user_id);
+    
+    -- Delete all reviews made by the user
+    DELETE FROM reviews 
+    WHERE user_id = OLD.user_id;
+    
+    -- Delete all tips created by the user
+    DELETE FROM tips 
+    WHERE user_id = OLD.user_id;
+    
+    -- Delete all feedback given by the user
+    DELETE FROM feedback 
+    WHERE user_id = OLD.user_id;
+END;
+";
+
+if (mysqli_query($conn, $sql)) {
+    echo "";
+} else {
+    echo "<br>Error creating user cleanup trigger: " . mysqli_error($conn);
+}
 ?>
