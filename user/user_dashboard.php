@@ -56,11 +56,7 @@ $news_result = $conn->query($news_sql);
             transition: transform 0.2s;
         }
 
-        /* .news-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        } */
-
+     
         .news-header {
             display: flex;
             justify-content: space-between;

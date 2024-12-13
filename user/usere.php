@@ -31,7 +31,7 @@ if ($result->num_rows > 0) {
         'added_at' => 'N/A'
     ];
 }
-
+$user_id=$user_data['user_id'];
 
 function deleteTip($tip_id, $user_id) {
     global $conn;

@@ -143,15 +143,7 @@ include('table.php');
                
           <section class="home_container" id="home">
                <div class="homec">
-               <!-- <div class="w w1">
-                    <b><span>M </span><span> u </span><span> s </span><span> i </span><span> c </span></b><BR>
-               </div>
-               <div class="w w2">
-                    <b><span> </span><span> T </span><span> i </span><span> p </span><span> s </span><span> <span> </span>& </span></b><br>
-               </div>
-               <div class="w w3">
-                    <b><span> T </span><span> r </span><span> i </span><span> c </span><span> k </span><span> s </span></b>
-               </div> -->
+               
                <div class="word">
                     <div class="w w1">
                          <b>
@@ -207,7 +199,7 @@ include('table.php');
                                    <div class="remember">
 
                                         <label><input type="checkbox">Remember me</label>
-                                        <a href="forgot_password.php">Forgot Password</a>
+                                        
 
                                    </div>
                                         <button type="submit" name="login" class="btn">Login</button>

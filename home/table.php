@@ -29,7 +29,8 @@ $sql = "CREATE TABLE IF NOT EXISTS sign_up (
     signup_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
     is_admin BOOLEAN DEFAULT FALSE,
     reset_token VARCHAR(65),
-    reset_token_expires DATETIME
+    reset_token_expires DATETIME,
+    verification_code VARCHAR(6)
 )";
 if (mysqli_query($conn, $sql)) {
     echo "";
